@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lyricle – Guess the Song</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header>
+      <div class="header-left">
+        <button id="btn-help" class="icon-btn" title="How to play" aria-label="How to play">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </button>
+      </div>
+      <h1>🎵 Lyricle</h1>
+      <div class="header-right">
+        <button id="btn-stats" class="icon-btn" title="Statistics" aria-label="Statistics">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        </button>
+        <button id="btn-settings" class="icon-btn" title="Settings" aria-label="Settings">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Game Area -->
+    <main>
+      <!-- Loading state -->
+      <div id="loading" class="screen">
+        <div class="spinner"></div>
+        <p>Loading songs…</p>
+      </div>
+
+      <!-- No data state -->
+      <div id="no-data" class="screen hidden">
+        <div class="no-data-content">
+          <h2>🎶 No Song Data Found</h2>
+          <p>Run the ingest script first to build your song library, or drop a <code>songs.json</code> file here.</p>
+          <div class="drop-zone" id="drop-zone">
+            <p>📁 Drop <code>songs.json</code> here</p>
+            <p class="small">or</p>
+            <button id="btn-file-pick" class="btn btn-primary">Choose File</button>
+            <input type="file" id="file-input" accept=".json" hidden>
+          </div>
+        </div>
+      </div>
+
+      <!-- Game state -->
+      <div id="game" class="screen hidden">
+        <!-- Progress bar (6 rounds) -->
+        <div class="progress-bar">
+          <div class="progress-step" data-step="1">1</div>
+          <div class="progress-step" data-step="2">2</div>
+          <div class="progress-step" data-step="3">3</div>
+          <div class="progress-step" data-step="4">4</div>
+          <div class="progress-step" data-step="5">5</div>
+          <div class="progress-step" data-step="6">6</div>
+        </div>
+
+        <!-- Lyrics reveal area -->
+        <div id="lyrics-area" class="lyrics-area">
+          <!-- Lines get revealed here -->
+        </div>
+
+        <!-- Guess input -->
+        <div id="guess-section" class="guess-section">
+          <div class="guess-input-wrapper">
+            <input
+              type="text"
+              id="guess-input"
+              placeholder="Type a song title…"
+              autocomplete="off"
+              spellcheck="false"
+            >
+            <div id="autocomplete-list" class="autocomplete-list hidden"></div>
+          </div>
+          <div class="guess-buttons">
+            <button id="btn-skip" class="btn btn-secondary">Skip</button>
+            <button id="btn-guess" class="btn btn-primary">Guess</button>
+          </div>
+        </div>
+
+        <!-- Previous guesses -->
+        <div id="guesses-history" class="guesses-history"></div>
+      </div>
+
+      <!-- Result state -->
+      <div id="result" class="screen hidden">
+        <div class="result-content">
+          <div id="result-icon" class="result-icon"></div>
+          <h2 id="result-title"></h2>
+          <p id="result-subtitle"></p>
+          <div id="result-song-info" class="result-song-info"></div>
+          <div class="result-actions">
+            <button id="btn-share" class="btn btn-secondary">📋 Share</button>
+            <button id="btn-next" class="btn btn-primary">Next Song →</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+      <p>
+        <span id="song-count">0</span> songs loaded
+        · <button id="btn-new-data" class="link-btn">Load different songs</button>
+      </p>
+    </footer>
+  </div>
+
+  <!-- How to Play Modal -->
+  <div id="modal-help" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <button class="modal-close">&times;</button>
+      <h2>How to Play</h2>
+      <div class="modal-body">
+        <p>Guess the song from its lyrics!</p>
+        <ol>
+          <li>🎵 You'll see <strong>one line</strong> of lyrics</li>
+          <li>🤔 Type your guess – song titles will autocomplete</li>
+          <li>❌ Wrong? Another line is revealed</li>
+          <li>🔄 You have <strong>6 attempts</strong> total</li>
+          <li>🏆 Fewer guesses = better score!</li>
+        </ol>
+        <div class="example-grid">
+          <div class="example">
+            <span class="step-badge correct">1</span>
+            <span>Genius! Got it on the first line</span>
+          </div>
+          <div class="example">
+            <span class="step-badge mid">3</span>
+            <span>Nice – figured it out with 3 lines</span>
+          </div>
+          <div class="example">
+            <span class="step-badge fail">✗</span>
+            <span>Couldn't guess it in 6 tries</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Modal -->
+  <div id="modal-stats" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <button class="modal-close">&times;</button>
+      <h2>Statistics</h2>
+      <div class="modal-body">
+        <div class="stats-grid">
+          <div class="stat">
+            <div class="stat-value" id="stat-played">0</div>
+            <div class="stat-label">Played</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value" id="stat-win-pct">0</div>
+            <div class="stat-label">Win %</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value" id="stat-streak">0</div>
+            <div class="stat-label">Streak</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value" id="stat-max-streak">0</div>
+            <div class="stat-label">Best</div>
+          </div>
+        </div>
+        <h3>Guess Distribution</h3>
+        <div id="distribution" class="distribution"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/game.js"></script>
+</body>
+</html>

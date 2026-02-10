@@ -1,0 +1,782 @@
+/* ===== Reset & Base ===== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg: #121213;
+  --bg-secondary: #1a1a1b;
+  --bg-card: #242427;
+  --border: #3a3a3c;
+  --text: #f0f0f0;
+  --text-muted: #818384;
+  --green: #538d4e;
+  --green-bright: #6aaa64;
+  --yellow: #b59f3b;
+  --red: #e74c3c;
+  --blue: #4a90d9;
+  --purple: #9b59b6;
+  --correct: var(--green);
+  --wrong: var(--red);
+  --skip: var(--yellow);
+  --radius: 8px;
+  --radius-lg: 12px;
+  --font: 'Inter', system-ui, -apple-system, sans-serif;
+  --max-width: 600px;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  width: 100%;
+  padding: 0 16px;
+}
+
+/* ===== Header ===== */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+header h1 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.header-left, .header-right {
+  display: flex;
+  gap: 8px;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: var(--radius);
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+}
+
+.icon-btn:hover {
+  background: var(--bg-card);
+}
+
+/* ===== Main ===== */
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 0;
+}
+
+.screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ===== Loading ===== */
+#loading {
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--border);
+  border-top-color: var(--green-bright);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ===== No Data ===== */
+.no-data-content {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.no-data-content h2 {
+  margin-bottom: 12px;
+}
+
+.no-data-content p {
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+
+.drop-zone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-lg);
+  padding: 40px 20px;
+  margin-top: 20px;
+  transition: border-color 0.3s, background 0.3s;
+  cursor: pointer;
+}
+
+.drop-zone.drag-over {
+  border-color: var(--green-bright);
+  background: rgba(106, 170, 100, 0.08);
+}
+
+.drop-zone p {
+  margin-bottom: 8px;
+}
+
+.drop-zone .small {
+  font-size: 0.85rem;
+}
+
+/* ===== Progress Bar ===== */
+.progress-bar {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.progress-step {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  border: 2px solid var(--border);
+  color: var(--text-muted);
+  transition: all 0.3s;
+}
+
+.progress-step.active {
+  border-color: var(--text);
+  color: var(--text);
+  transform: scale(1.1);
+}
+
+.progress-step.correct {
+  background: var(--green);
+  border-color: var(--green);
+  color: white;
+}
+
+.progress-step.wrong {
+  background: var(--red);
+  border-color: var(--red);
+  color: white;
+}
+
+.progress-step.skip {
+  background: var(--yellow);
+  border-color: var(--yellow);
+  color: white;
+}
+
+/* ===== Lyrics Area ===== */
+.lyrics-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 24px;
+  min-height: 200px;
+}
+
+.lyric-line {
+  padding: 14px 18px;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border-left: 3px solid var(--border);
+  font-size: 1rem;
+  line-height: 1.5;
+  animation: slideIn 0.4s ease-out;
+  transition: border-color 0.3s;
+}
+
+.lyric-line:first-child {
+  border-top-left-radius: var(--radius-lg);
+  border-top-right-radius: var(--radius-lg);
+}
+
+.lyric-line:last-child {
+  border-bottom-left-radius: var(--radius-lg);
+  border-bottom-right-radius: var(--radius-lg);
+}
+
+.lyric-line.new {
+  border-left-color: var(--blue);
+}
+
+.lyric-line .line-number {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-right: 10px;
+  min-width: 20px;
+  display: inline-block;
+}
+
+.lyric-placeholder {
+  padding: 14px 18px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius);
+  border-left: 3px solid var(--bg-secondary);
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 0.9rem;
+  opacity: 0.5;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== Guess Section ===== */
+.guess-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.guess-input-wrapper {
+  position: relative;
+}
+
+#guess-input {
+  width: 100%;
+  padding: 14px 18px;
+  font-size: 1rem;
+  font-family: var(--font);
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-lg);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+#guess-input:focus {
+  border-color: var(--green-bright);
+}
+
+#guess-input::placeholder {
+  color: var(--text-muted);
+}
+
+.guess-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.btn {
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-family: var(--font);
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s;
+  flex: 1;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn-primary {
+  background: var(--green);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--green-bright);
+}
+
+.btn-secondary {
+  background: var(--bg-card);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.btn-secondary:hover {
+  background: var(--border);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===== Autocomplete ===== */
+.autocomplete-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 100;
+  margin-top: 4px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.autocomplete-item {
+  padding: 10px 16px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid var(--bg);
+  transition: background 0.15s;
+}
+
+.autocomplete-item:last-child {
+  border-bottom: none;
+}
+
+.autocomplete-item:hover,
+.autocomplete-item.active {
+  background: rgba(106, 170, 100, 0.15);
+}
+
+.autocomplete-item .song-title {
+  font-weight: 600;
+}
+
+.autocomplete-item .song-artist {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.autocomplete-item .match-highlight {
+  color: var(--green-bright);
+  font-weight: 700;
+}
+
+/* ===== Guesses History ===== */
+.guesses-history {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.guess-entry {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  border-radius: var(--radius);
+  background: var(--bg-secondary);
+  font-size: 0.9rem;
+  animation: slideIn 0.3s ease-out;
+}
+
+.guess-entry .guess-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.guess-entry .guess-text {
+  flex: 1;
+}
+
+.guess-entry.wrong .guess-text {
+  color: var(--red);
+}
+
+.guess-entry.skip .guess-text {
+  color: var(--yellow);
+  font-style: italic;
+}
+
+/* ===== Result Screen ===== */
+.result-content {
+  text-align: center;
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.result-icon {
+  font-size: 4rem;
+  animation: bounceIn 0.6s ease-out;
+}
+
+@keyframes bounceIn {
+  0% { transform: scale(0); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.result-content h2 {
+  font-size: 1.5rem;
+}
+
+.result-content p {
+  color: var(--text-muted);
+}
+
+.result-song-info {
+  background: var(--bg-card);
+  padding: 20px 28px;
+  border-radius: var(--radius-lg);
+  border-left: 4px solid var(--green);
+  text-align: left;
+  width: 100%;
+  max-width: 400px;
+}
+
+.result-song-info .song-title {
+  font-weight: 700;
+  font-size: 1.15rem;
+  margin-bottom: 4px;
+}
+
+.result-song-info .song-artist {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.result-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+  width: 100%;
+  max-width: 400px;
+}
+
+/* ===== Footer ===== */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 12px 0;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: var(--blue);
+  cursor: pointer;
+  font-size: inherit;
+  font-family: var(--font);
+  text-decoration: underline;
+}
+
+.link-btn:hover {
+  color: var(--green-bright);
+}
+
+/* ===== Modals ===== */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.modal-content {
+  position: relative;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  max-width: 440px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: modalIn 0.3s ease-out;
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.6rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.modal-close:hover {
+  color: var(--text);
+}
+
+.modal-content h2 {
+  margin-bottom: 16px;
+  font-size: 1.3rem;
+}
+
+.modal-content h3 {
+  margin: 16px 0 10px;
+  font-size: 1rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.modal-body ol {
+  padding-left: 20px;
+  margin-bottom: 16px;
+}
+
+.modal-body li {
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.example-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.example {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.9rem;
+}
+
+.step-badge {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+  color: white;
+}
+
+.step-badge.correct {
+  background: var(--green);
+}
+
+.step-badge.mid {
+  background: var(--yellow);
+}
+
+.step-badge.fail {
+  background: var(--red);
+}
+
+/* ===== Stats ===== */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.stat {
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 800;
+}
+
+.stat-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.distribution {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dist-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dist-label {
+  width: 16px;
+  font-weight: 700;
+  text-align: right;
+  font-size: 0.85rem;
+}
+
+.dist-bar {
+  height: 22px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  min-width: 22px;
+  background: var(--border);
+  color: white;
+  transition: width 0.5s ease-out;
+}
+
+.dist-bar.highlight {
+  background: var(--green);
+}
+
+/* ===== Toast ===== */
+.toast {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--text);
+  color: var(--bg);
+  padding: 12px 24px;
+  border-radius: var(--radius);
+  font-weight: 600;
+  font-size: 0.9rem;
+  z-index: 2000;
+  animation: toastIn 0.3s ease-out, toastOut 0.3s ease-in 1.7s forwards;
+  pointer-events: none;
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+@keyframes toastOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* ===== Shake animation for wrong guess ===== */
+.shake {
+  animation: shake 0.4s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-6px); }
+  80% { transform: translateX(6px); }
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 480px) {
+  header h1 {
+    font-size: 1.2rem;
+  }
+
+  .progress-step {
+    width: 34px;
+    height: 34px;
+    font-size: 0.8rem;
+  }
+
+  .lyric-line {
+    padding: 10px 14px;
+    font-size: 0.9rem;
+  }
+
+  #guess-input {
+    padding: 12px 14px;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ===== Scrollbar ===== */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}

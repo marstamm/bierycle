@@ -1,0 +1,4 @@
+data/*.json
+!data/songs.json
+
+ingest/*.csv
