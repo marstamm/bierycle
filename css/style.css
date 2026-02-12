@@ -87,6 +87,60 @@ header h1 {
   background: var(--bg-card);
 }
 
+/* ===== Mode Switcher ===== */
+.mode-switcher {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  padding: 12px 0 4px;
+  background: var(--bg);
+}
+
+.mode-btn {
+  padding: 8px 20px;
+  font-size: 0.85rem;
+  font-family: var(--font);
+  font-weight: 600;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mode-btn:hover {
+  background: var(--bg-card);
+  color: var(--text);
+}
+
+.mode-btn.active {
+  background: var(--green);
+  border-color: var(--green);
+  color: white;
+}
+
+.daily-info {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  padding: 6px 0 2px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.daily-info span:last-child {
+  font-weight: 700;
+  color: var(--green-bright);
+}
+
+.daily-done-msg {
+  margin-top: 12px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
 /* ===== Main ===== */
 main {
   flex: 1;

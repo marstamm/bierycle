@@ -1,6 +1,6 @@
 /**
  * Lyricle – Guess the Song from its Lyrics
- * Pure frontend game engine
+ * Pure frontend game engine with Daily + Practice modes
  */
 
 (function () {
@@ -10,7 +10,10 @@
   const MAX_GUESSES = 6;
   const STORAGE_KEY_STATS = 'lyricle_stats';
   const STORAGE_KEY_SONGS = 'lyricle_songs';
+  const STORAGE_KEY_DAILY = 'lyricle_daily';
   const DATA_PATH = 'data/songs.json';
+  // Epoch for daily numbering (arbitrary fixed start date)
+  const DAILY_EPOCH = new Date('2026-02-01T00:00:00');
 
   // ===== State =====
   let songs = [];
@@ -21,6 +24,38 @@
   let gameOver = false;
   let selectedAutocompleteIndex = -1;
   let playedSongIndices = new Set();
+  let mode = 'daily'; // 'daily' or 'practice'
+
+  // ===== Seeded RNG (mulberry32) =====
+  function mulberry32(seed) {
+    return function () {
+      seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+      let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+
+  function getTodayString() {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  }
+
+  function getDailyNumber(dateStr) {
+    const d = new Date(dateStr + 'T00:00:00');
+    const diff = d - DAILY_EPOCH;
+    return Math.floor(diff / (1000 * 60 * 60 * 24));
+  }
+
+  function hashString(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const ch = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + ch;
+      hash |= 0;
+    }
+    return hash;
+  }
 
   // ===== DOM Elements =====
   const $ = (sel) => document.querySelector(sel);
@@ -78,7 +113,7 @@
   function onSongsLoaded() {
     elSongCount.textContent = songs.length;
     playedSongIndices.clear();
-    startNewRound();
+    setMode('daily');
   }
 
   function handleFileUpload(file) {
@@ -106,11 +141,145 @@
     reader.readAsText(file);
   }
 
-  // ===== Game Logic =====
-  function startNewRound() {
-    // Pick a random song we haven't played yet
+  // ===== Mode Management =====
+  function setMode(newMode) {
+    mode = newMode;
+
+    // Update mode buttons
+    $('#btn-mode-daily').classList.toggle('active', mode === 'daily');
+    $('#btn-mode-practice').classList.toggle('active', mode === 'practice');
+
+    // Show/hide daily info
+    const dailyInfo = $('#daily-info');
+    if (mode === 'daily') {
+      dailyInfo.classList.remove('hidden');
+      const today = getTodayString();
+      const num = getDailyNumber(today);
+      $('#daily-date').textContent = new Date(today + 'T00:00:00').toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+      $('#daily-number').textContent = `#${num}`;
+    } else {
+      dailyInfo.classList.add('hidden');
+    }
+
+    if (mode === 'daily') {
+      startDailyGame();
+    } else {
+      startPracticeRound();
+    }
+  }
+
+  // ===== Daily Mode =====
+  function getDailySave() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY_DAILY)) || {};
+    } catch { return {}; }
+  }
+
+  function saveDailyState() {
+    const today = getTodayString();
+    const state = {
+      date: today,
+      songIndex: songs.indexOf(currentSong),
+      guesses: guesses,
+      round: round,
+      gameOver: gameOver,
+      won: guesses.some(g => g.correct),
+      startLineIndex: currentSong._startLineIndex,
+    };
+    localStorage.setItem(STORAGE_KEY_DAILY, JSON.stringify(state));
+  }
+
+  function startDailyGame() {
+    const today = getTodayString();
+    const saved = getDailySave();
+
+    // Resume or show completed daily
+    if (saved.date === today && saved.songIndex !== undefined) {
+      currentSong = songs[saved.songIndex];
+      const startIdx = saved.startLineIndex || 0;
+      currentSong._gameLines = currentSong.lines.slice(startIdx, startIdx + MAX_GUESSES);
+      currentSong._startLineIndex = startIdx;
+      guesses = saved.guesses || [];
+      round = saved.round || 0;
+      gameOver = saved.gameOver || false;
+
+      if (gameOver) {
+        // Already completed today — show result
+        showResult(saved.won);
+        return;
+      }
+
+      // Restore in-progress game
+      restoreGameUI();
+      return;
+    }
+
+    // Start a new daily game
+    const seed = hashString('lyricle-daily-' + today);
+    const rng = mulberry32(seed);
+
+    const idx = Math.floor(rng() * songs.length);
+    currentSong = songs[idx];
+
+    const totalLines = currentSong.lines.length;
+    const maxStart = Math.max(0, totalLines - MAX_GUESSES);
+    const startIdx = Math.floor(rng() * (maxStart + 1));
+    currentSong._startLineIndex = startIdx;
+    currentSong._gameLines = currentSong.lines.slice(startIdx, startIdx + MAX_GUESSES);
+
+    revealedLines = [];
+    guesses = [];
+    round = 0;
+    gameOver = false;
+    selectedAutocompleteIndex = -1;
+
+    setupGameUI();
+    saveDailyState();
+  }
+
+  function restoreGameUI() {
+    showScreen('game');
+    elLyricsArea.innerHTML = '';
+    elGuessHistory.innerHTML = '';
+    elGuessInput.value = '';
+    elGuessInput.disabled = false;
+    elAutocomplete.classList.add('hidden');
+    $('#btn-guess').disabled = false;
+    $('#btn-skip').disabled = false;
+    revealedLines = [];
+
+    // Replay all revealed lines and guesses
+    for (let i = 0; i < round; i++) {
+      // Reveal the line
+      const line = currentSong._gameLines[i];
+      if (line) {
+        revealedLines.push(line);
+        const el = document.createElement('div');
+        el.className = 'lyric-line';
+        el.innerHTML = `<span class="line-number">${i + 1}</span>${escapeHtml(line)}`;
+        elLyricsArea.appendChild(el);
+      }
+    }
+
+    // Restore progress steps
+    updateProgressBar();
+    for (let i = 0; i < guesses.length; i++) {
+      const g = guesses[i];
+      const type = g.correct ? 'correct' : g.skip ? 'skip' : 'wrong';
+      updateProgressStep(i + 1, type);
+      addGuessEntry(g.text, type);
+    }
+
+    // Now reveal the next line for the current guess
+    revealNextLine();
+    updatePlaceholders();
+    elGuessInput.focus();
+  }
+
+  // ===== Practice Mode =====
+  function startPracticeRound() {
     if (playedSongIndices.size >= songs.length) {
-      playedSongIndices.clear(); // Reset when all songs played
+      playedSongIndices.clear();
     }
 
     let idx;
@@ -121,11 +290,11 @@
     playedSongIndices.add(idx);
     currentSong = songs[idx];
 
-    // Pick a random starting position in the lyrics
-    // Ensure we have enough lines for the game
     const totalLines = currentSong.lines.length;
     const maxStart = Math.max(0, totalLines - MAX_GUESSES);
     const startIdx = Math.floor(Math.random() * (maxStart + 1));
+    currentSong._startLineIndex = startIdx;
+    currentSong._gameLines = currentSong.lines.slice(startIdx, startIdx + MAX_GUESSES);
 
     revealedLines = [];
     guesses = [];
@@ -133,10 +302,11 @@
     gameOver = false;
     selectedAutocompleteIndex = -1;
 
-    // Store which lines we'll reveal (sequential from startIdx)
-    currentSong._gameLines = currentSong.lines.slice(startIdx, startIdx + MAX_GUESSES);
+    setupGameUI();
+  }
 
-    // Reset UI
+  // ===== Common Game Setup =====
+  function setupGameUI() {
     showScreen('game');
     elLyricsArea.innerHTML = '';
     elGuessHistory.innerHTML = '';
@@ -219,6 +389,9 @@
       elGuessInput.classList.add('shake');
       setTimeout(() => elGuessInput.classList.remove('shake'), 400);
 
+      // Save daily progress
+      if (mode === 'daily') saveDailyState();
+
       revealNextLine();
       elGuessInput.focus();
     }
@@ -239,6 +412,9 @@
     if (round >= MAX_GUESSES) {
       endGame(false);
     } else {
+      // Save daily progress
+      if (mode === 'daily') saveDailyState();
+
       revealNextLine();
       elGuessInput.focus();
     }
@@ -253,6 +429,11 @@
     // Save stats
     saveStats(won, round);
 
+    // Save daily state if in daily mode
+    if (mode === 'daily') {
+      saveDailyState();
+    }
+
     // Show result after a brief delay
     setTimeout(() => {
       showResult(won);
@@ -266,6 +447,8 @@
     const resultTitle = $('#result-title');
     const resultSubtitle = $('#result-subtitle');
     const resultSongInfo = $('#result-song-info');
+    const btnNext = $('#btn-next');
+    const dailyDoneMsg = $('#daily-done-msg');
 
     if (won) {
       resultIcon.textContent = '🎉';
@@ -283,6 +466,17 @@
       <div class="song-title">🎵 ${escapeHtml(currentSong.title)}</div>
       <div class="song-artist">by ${escapeHtml(currentSong.artist)}</div>
     `;
+
+    // In daily mode: hide "Next Song", show "come back tomorrow" message
+    if (mode === 'daily') {
+      btnNext.textContent = '🔄 Play Practice Mode';
+      btnNext.onclick = () => setMode('practice');
+      dailyDoneMsg.classList.remove('hidden');
+    } else {
+      btnNext.textContent = 'Next Song →';
+      btnNext.onclick = () => startPracticeRound();
+      dailyDoneMsg.classList.add('hidden');
+    }
   }
 
   // ===== Autocomplete =====
@@ -529,7 +723,12 @@
       grid += '⬛';
     }
 
-    const text = `🎵 Lyricle ${score}/${MAX_GUESSES}\n${grid}`;
+    let label = '🎵 Bierycle';
+    if (mode === 'daily') {
+      const num = getDailyNumber(getTodayString());
+      label += ` #${num}`;
+    }
+    const text = `${label} ${score}/${MAX_GUESSES}\n${grid}`;
 
     if (navigator.clipboard) {
       navigator.clipboard.writeText(text).then(() => {
@@ -602,8 +801,15 @@
     // Buttons
     $('#btn-guess').addEventListener('click', () => makeGuess(elGuessInput.value));
     $('#btn-skip').addEventListener('click', () => skipGuess());
-    $('#btn-next').addEventListener('click', () => startNewRound());
+    $('#btn-next').addEventListener('click', () => {
+      if (mode === 'daily') setMode('practice');
+      else startPracticeRound();
+    });
     $('#btn-share').addEventListener('click', () => shareResult());
+
+    // Mode switcher
+    $('#btn-mode-daily').addEventListener('click', () => setMode('daily'));
+    $('#btn-mode-practice').addEventListener('click', () => setMode('practice'));
 
     // Header buttons
     $('#btn-help').addEventListener('click', () => openModal('modal-help'));

@@ -1,4 +1,4 @@
-# 🎵 Lyricle – Guess the Song from its Lyrics
+# 🎵 Bierycle – Guess the Malleschlager from its Lyrics
 
 A Wordle-style guessing game where you identify songs from their lyrics, one line at a time.
 
